@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khalsa College Patiala - Inquiry Chatbot</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="chat-container" id="chatContainer">
+
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="header-content">
+                <div class="header-icon-wrap">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1>Khalsa College Patiala</h1>
+                    <p>College Inquiry Chatbot ✨</p>
+                </div>
+            </div>
+            <button class="clear-btn" onclick="clearChat()" title="Clear Chat">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+
+        <!-- Messages -->
+        <div class="chat-messages" id="chatMessages"></div>
+
+        <!-- Input -->
+        <div class="chat-input-container">
+            <div class="input-wrapper">
+                <input
+                    type="text"
+                    class="chat-input"
+                    id="chatInput"
+                    placeholder="Ask about admissions, courses, fees..."
+                    onkeypress="handleKeyPress(event)"
+                    autocomplete="off"
+                />
+                <button class="send-btn" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

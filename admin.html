@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Panel — Khalsa College Chatbot</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Nunito:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --rose:#C4637A;--rose-mid:#D4788E;--rose-light:#E8A0B0;--rose-pale:#F7D6DF;
+  --lavender:#9B8FC4;--lav-mid:#B5ABDA;--lav-pale:#EDE9F7;
+  --blush:#FDF0F3;--blush-mid:#FAE2E8;--blush-dark:#F2CDD5;
+  --white:#FFFFFF;--bg:#F8F0F4;--text:#4A2D35;--muted:#9A7A84;--light:#C4A8B0;
+  --green:#2E7D5E;--green-bg:#E8F5EF;--amber:#C47A1E;--amber-bg:#FEF3E0;
+  --red:#B03050;--red-bg:#FCE8EE;--blue:#3B6FAB;--blue-bg:#E8F0FA;
+  --radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;--pill:999px;
+  --shadow-sm:0 2px 8px rgba(196,99,122,.10);--shadow-md:0 6px 24px rgba(196,99,122,.14);
+  --shadow-lg:0 16px 48px rgba(155,143,196,.18);
+  --font-serif:'Playfair Display',Georgia,serif;--font-sans:'Nunito',system-ui,sans-serif;
+  --tr:all 0.22s cubic-bezier(.4,0,.2,1);
+}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ══ LOGIN PAGE ══ */
+#login-page{
+  position:fixed;inset:0;z-index:999;
+  background:linear-gradient(135deg,#F9E4EC 0%,#EDE6F7 50%,#FCE8F0 100%);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.login-card{
+  background:rgba(255,255,255,.85);backdrop-filter:blur(20px);
+  border-radius:var(--radius-xl);border:1.5px solid rgba(196,99,122,.15);
+  box-shadow:var(--shadow-lg);padding:40px 36px;width:100%;max-width:400px;
+  animation:pop-in .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop-in{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:none}}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo .icon{
+  width:56px;height:56px;border-radius:50%;margin:0 auto 14px;
+  background:linear-gradient(135deg,var(--rose),var(--lavender));
+  display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;
+  box-shadow:0 6px 20px rgba(196,99,122,.35);
+}
+.login-logo h2{font-family:var(--font-serif);font-size:22px;color:var(--text)}
+.login-logo p{font-size:12.5px;color:var(--muted);margin-top:4px}
+.login-err{
+  background:var(--red-bg);color:var(--red);border:1px solid rgba(176,48,80,.2);
+  border-radius:var(--radius-md);padding:10px 14px;font-size:13px;
+  margin-bottom:14px;display:none;
+}
+.input-icon-wrap{position:relative}
+.input-icon-wrap i{
+  position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  color:var(--light);font-size:14px;pointer-events:none;
+}
+.input-icon-wrap input{padding-left:38px}
+
+/* ══ SIDEBAR ══ */
+.sidebar{
+  position:fixed;top:0;left:0;width:240px;height:100vh;
+  background:linear-gradient(160deg,#C4637A 0%,#9B8FC4 60%,#B5ABDA 100%);
+  display:flex;flex-direction:column;z-index:100;
+  box-shadow:4px 0 24px rgba(196,99,122,.18);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.sidebar-logo{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.15)}
+.sidebar-logo .icon{
+  width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.22);
+  border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;
+  justify-content:center;font-size:18px;color:#fff;margin-bottom:10px;
+}
+.sidebar-logo h2{font-family:var(--font-serif);font-size:14.5px;color:#fff;line-height:1.3}
+.sidebar-logo p{font-size:11px;color:rgba(255,255,255,.65);margin-top:3px}
+.nav-section{padding:14px 12px 6px;font-size:10px;font-weight:700;
+  color:rgba(255,255,255,.4);letter-spacing:.12em;text-transform:uppercase}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 18px;margin:2px 8px;
+  border-radius:var(--radius-md);color:rgba(255,255,255,.78);font-size:13px;
+  font-weight:500;cursor:pointer;transition:var(--tr);text-decoration:none;
+}
+.nav-item i{width:18px;text-align:center;font-size:13px}
+.nav-item:hover{background:rgba(255,255,255,.15);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.22);color:#fff;font-weight:700}
+.sidebar-footer{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.12);font-size:11.5px;color:rgba(255,255,255,.5)}
+.online-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#A8EEC1;
+  margin-right:6px;animation:pdot 2s ease-in-out infinite;box-shadow:0 0 6px rgba(168,238,193,.6)}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
+.hamburger{
+  display:none;position:fixed;top:14px;left:14px;z-index:200;
+  width:38px;height:38px;border-radius:var(--radius-md);
+  background:linear-gradient(135deg,var(--rose),var(--lavender));
+  color:#fff;border:none;cursor:pointer;font-size:16px;
+  align-items:center;justify-content:center;box-shadow:var(--shadow-md);
+}
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;background:rgba(74,45,53,.4);
+  backdrop-filter:blur(2px);z-index:99;
+}
+
+/* ══ MAIN ══ */
+.main{margin-left:240px;min-height:100vh;padding:28px 28px 40px}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.topbar h1{font-family:var(--font-serif);font-size:24px;font-weight:600;color:var(--text)}
+.topbar h1 span{color:var(--rose)}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* ══ BUTTONS ══ */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--pill);
+  font-family:var(--font-sans);font-size:13px;font-weight:600;cursor:pointer;transition:var(--tr);border:none}
+.btn-primary{background:linear-gradient(135deg,var(--rose),var(--lavender));color:#fff;box-shadow:0 3px 12px rgba(196,99,122,.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(196,99,122,.45)}
+.btn-outline{background:var(--white);color:var(--rose);border:1.5px solid rgba(196,99,122,.25);box-shadow:var(--shadow-sm)}
+.btn-outline:hover{background:var(--rose-pale);transform:translateY(-1px)}
+.btn-success{background:var(--green-bg);color:var(--green);border:1.5px solid rgba(46,125,94,.2)}
+.btn-success:hover{background:#d0eddf}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1.5px solid rgba(176,48,80,.2)}
+.btn-danger:hover{background:#f8d0da}
+.btn-sm{padding:6px 13px;font-size:12px}
+
+/* ══ STAT CARDS ══ */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--white);border-radius:var(--radius-lg);padding:18px;
+  border:1px solid rgba(196,99,122,.09);box-shadow:var(--shadow-sm);
+  position:relative;overflow:hidden;transition:var(--tr)}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.stat-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;
+  border-radius:50%;background:var(--rose-pale);opacity:.4}
+.stat-icon{width:38px;height:38px;border-radius:var(--radius-md);display:flex;
+  align-items:center;justify-content:center;font-size:16px;margin-bottom:10px;position:relative}
+.stat-icon.pink{background:var(--rose-pale);color:var(--rose)}
+.stat-icon.purple{background:var(--lav-pale);color:var(--lavender)}
+.stat-icon.green{background:var(--green-bg);color:var(--green)}
+.stat-icon.amber{background:var(--amber-bg);color:var(--amber)}
+.stat-value{font-size:24px;font-weight:700;color:var(--text);line-height:1}
+.stat-label{font-size:12px;color:var(--muted);margin-top:4px;font-weight:500}
+.stat-change{font-size:11px;margin-top:6px;font-weight:600}
+.up{color:var(--green)}.neutral{color:var(--muted)}
+
+/* ══ SECTION CARDS ══ */
+.section-card{background:var(--white);border-radius:var(--radius-lg);
+  border:1px solid rgba(196,99,122,.09);box-shadow:var(--shadow-sm);margin-bottom:22px;overflow:hidden}
+.section-header{padding:16px 20px;border-bottom:1px solid rgba(196,99,122,.08);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.section-title{font-size:14.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.section-title i{color:var(--rose);font-size:13px}
+.section-body{padding:18px 20px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+
+/* ══ TABLE ══ */
+.faq-table{width:100%;border-collapse:collapse}
+.faq-table th{padding:10px 13px;font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);text-align:left;border-bottom:1.5px solid var(--blush-dark)}
+.faq-table td{padding:11px 13px;font-size:13px;color:var(--text);
+  border-bottom:1px solid rgba(196,99,122,.07);vertical-align:top}
+.faq-table tr:last-child td{border-bottom:none}
+.faq-table tr:hover td{background:var(--blush)}
+
+/* ══ BADGE ══ */
+.badge{display:inline-block;padding:3px 10px;border-radius:var(--pill);font-size:11px;font-weight:700}
+.badge-pink{background:var(--rose-pale);color:var(--rose)}
+.badge-purple{background:var(--lav-pale);color:var(--lavender)}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+
+/* ══ FORM ══ */
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.form-input,.form-select,.form-textarea{
+  width:100%;padding:10px 14px;border-radius:var(--radius-md);
+  border:1.5px solid rgba(196,99,122,.18);background:var(--white);
+  font-family:var(--font-sans);font-size:13.5px;color:var(--text);
+  transition:var(--tr);outline:none;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{
+  border-color:var(--rose-light);box-shadow:0 0 0 3px rgba(196,99,122,.10)}
+.form-textarea{resize:vertical;min-height:80px;line-height:1.6}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ══ LOG ITEM ══ */
+.log-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;
+  border-bottom:1px solid rgba(196,99,122,.07)}
+.log-item:last-child{border-bottom:none}
+.log-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:12px}
+.log-avatar.user{background:linear-gradient(135deg,var(--rose),var(--lavender));color:#fff}
+.log-msg{font-size:13px;color:var(--text);line-height:1.5}
+.log-meta{font-size:11px;color:var(--light);margin-top:3px}
+.log-intent{display:inline-block;padding:2px 8px;border-radius:var(--pill);
+  font-size:10px;font-weight:700;background:var(--rose-pale);color:var(--rose);margin-left:6px}
+
+/* ══ BAR ══ */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bar-label{font-size:12.5px;color:var(--text);width:100px;flex-shrink:0;font-weight:500}
+.bar-track{flex:1;height:8px;background:var(--blush-dark);border-radius:var(--pill);overflow:hidden}
+.bar-fill{height:100%;border-radius:var(--pill);
+  background:linear-gradient(90deg,var(--rose),var(--lavender));
+  transition:width .8s cubic-bezier(.4,0,.2,1)}
+.bar-count{font-size:12px;color:var(--muted);width:28px;text-align:right;flex-shrink:0}
+
+/* ══ TOGGLE ══ */
+.toggle{position:relative;width:36px;height:20px}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;border-radius:var(--pill);background:var(--blush-dark);cursor:pointer;transition:var(--tr)}
+.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;border-radius:50%;
+  left:3px;top:3px;background:#fff;transition:var(--tr);box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.toggle input:checked+.toggle-slider{background:linear-gradient(135deg,var(--rose),var(--lavender))}
+.toggle input:checked+.toggle-slider::before{transform:translateX(16px)}
+
+/* ══ MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(74,45,53,.35);backdrop-filter:blur(4px);
+  z-index:300;display:flex;align-items:center;justify-content:center;padding:16px;
+  opacity:0;pointer-events:none;transition:opacity .22s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--white);border-radius:var(--radius-xl);padding:26px;
+  width:100%;max-width:460px;box-shadow:var(--shadow-lg);
+  transform:translateY(16px) scale(.97);transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  max-height:90vh;overflow-y:auto}
+.modal-overlay.open .modal{transform:translateY(0) scale(1)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.modal-title{font-family:var(--font-serif);font-size:18px;color:var(--text)}
+.modal-close{width:28px;height:28px;border-radius:50%;border:none;background:var(--blush);
+  color:var(--rose);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:13px;transition:var(--tr)}
+.modal-close:hover{background:var(--rose-pale)}
+
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:24px;right:24px;z-index:400;padding:12px 18px;
+  border-radius:var(--radius-md);font-size:13.5px;font-weight:600;color:#fff;
+  background:linear-gradient(135deg,var(--green),#4CAF82);
+  box-shadow:0 8px 24px rgba(46,125,94,.3);
+  transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);
+  display:flex;align-items:center;gap:8px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{background:linear-gradient(135deg,var(--red),#E06080)}
+
+/* ══ INFO EDITOR ══ */
+.info-section{background:var(--blush);border-radius:var(--radius-md);padding:16px;margin-bottom:14px}
+.info-section-title{font-size:13px;font-weight:700;color:var(--rose);margin-bottom:12px;
+  display:flex;align-items:center;gap:6px}
+.info-field{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.info-field:last-child{margin-bottom:0}
+.info-field label{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.info-field input,.info-field textarea{
+  padding:9px 13px;border-radius:var(--radius-sm);
+  border:1.5px solid rgba(196,99,122,.18);background:var(--white);
+  font-family:var(--font-sans);font-size:13px;color:var(--text);outline:none;transition:var(--tr)}
+.info-field input:focus,.info-field textarea:focus{border-color:var(--rose-light);box-shadow:0 0 0 3px rgba(196,99,122,.10)}
+.info-field textarea{resize:vertical;min-height:70px;line-height:1.6}
+
+/* ══ EMPTY ══ */
+.empty{text-align:center;padding:32px 20px;color:var(--light)}
+.empty i{font-size:32px;margin-bottom:8px;display:block;color:var(--blush-dark)}
+.empty p{font-size:13px}
+
+/* ══ PAGES ══ */
+.page{display:none}.page.active{display:block}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:900px){
+  .sidebar{width:220px}
+  .main{margin-left:220px;padding:20px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .three-col{grid-template-columns:1fr 1fr}
+}
+@media(max-width:680px){
+  .sidebar{transform:translateX(-100%);width:240px}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-overlay.open{display:block}
+  .main{margin-left:0;padding:16px;padding-top:60px}
+  .hamburger{display:flex}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .two-col,.three-col,.form-row{grid-template-columns:1fr}
+  .topbar{flex-direction:column;align-items:flex-start}
+  .topbar h1{font-size:20px}
+}
+@media(max-width:420px){
+  .stats-grid{grid-template-columns:1fr}
+  .modal{padding:20px}
+  .faq-table th:nth-child(3),.faq-table td:nth-child(3){display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN PAGE ══ -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon"><i class="fas fa-graduation-cap"></i></div>
+      <h2>Khalsa College Patiala</h2>
+      <p>Admin Panel — Please login to continue</p>
+    </div>
+    <div class="login-err" id="login-err"><i class="fas fa-exclamation-circle"></i> Wrong username or password!</div>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <div class="input-icon-wrap">
+        <i class="fas fa-user"></i>
+        <input class="form-input" id="login-user" placeholder="admin" onkeypress="if(event.key==='Enter')doLogin()"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <div class="input-icon-wrap">
+        <i class="fas fa-lock"></i>
+        <input class="form-input" id="login-pass" type="password" placeholder="••••••••" onkeypress="if(event.key==='Enter')doLogin()"/>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:6px" onclick="doLogin()">
+      <i class="fas fa-sign-in-alt"></i> Login
+    </button>
+    <p style="text-align:center;font-size:11.5px;color:var(--light);margin-top:14px">Default: admin / admin123</p>
+  </div>
+</div>
+
+<!-- ══ HAMBURGER ══ -->
+<button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+<div class="sidebar-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="icon"><i class="fas fa-graduation-cap"></i></div>
+    <h2>Khalsa College Patiala</h2>
+    <p>Admin Dashboard</p>
+  </div>
+  <div class="nav-section">Main</div>
+  <a class="nav-item active" onclick="showPage('dashboard',this)"><i class="fas fa-chart-pie"></i> Dashboard</a>
+  <a class="nav-item" onclick="showPage('chatlogs',this)"><i class="fas fa-comments"></i> Chat Logs</a>
+  <a class="nav-item" onclick="showPage('faq',this)"><i class="fas fa-question-circle"></i> FAQ Manager</a>
+  <a class="nav-item" onclick="showPage('intents',this)"><i class="fas fa-brain"></i> Intent Stats</a>
+  <div class="nav-section">Settings</div>
+  <a class="nav-item" onclick="showPage('college-info',this)"><i class="fas fa-university"></i> College Info</a>
+  <a class="nav-item" onclick="showPage('keywords',this)"><i class="fas fa-tags"></i> Keywords</a>
+  <a class="nav-item" href="index.html" target="_blank"><i class="fas fa-robot"></i> View Chatbot</a>
+  <a class="nav-item" onclick="doLogout()" style="color:rgba(255,200,200,.8)"><i class="fas fa-sign-out-alt"></i> Logout</a>
+  <div class="sidebar-footer"><span class="online-dot"></span>Server Online</div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="topbar">
+      <h1>Good morning, <span>Admin</span> 👋</h1>
+      <div class="topbar-right">
+        <button class="btn btn-outline" onclick="refreshStats()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <button class="btn btn-primary" onclick="openModal('add-faq-modal')"><i class="fas fa-plus"></i> Add FAQ</button>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon pink"><i class="fas fa-comments"></i></div>
+        <div class="stat-value" id="stat-total">—</div><div class="stat-label">Total Chats</div>
+        <div class="stat-change neutral" id="stat-today">Loading...</div></div>
+      <div class="stat-card"><div class="stat-icon purple"><i class="fas fa-users"></i></div>
+        <div class="stat-value" id="stat-sessions">—</div><div class="stat-label">Sessions</div>
+        <div class="stat-change up">Unique visitors</div></div>
+      <div class="stat-card"><div class="stat-icon green"><i class="fas fa-question-circle"></i></div>
+        <div class="stat-value" id="stat-faqs">—</div><div class="stat-label">Active FAQs</div>
+        <div class="stat-change neutral">In database</div></div>
+      <div class="stat-card"><div class="stat-icon amber"><i class="fas fa-fire"></i></div>
+        <div class="stat-value" id="stat-top" style="font-size:16px">—</div>
+        <div class="stat-label">Top Intent</div><div class="stat-change up">Most asked</div></div>
+    </div>
+    <div class="two-col">
+      <div class="section-card">
+        <div class="section-header"><div class="section-title"><i class="fas fa-chart-bar"></i> Top Intents</div></div>
+        <div class="section-body" id="intent-bars"></div>
+      </div>
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title"><i class="fas fa-clock"></i> Recent Chats</div>
+          <button class="btn btn-outline btn-sm" onclick="showPage('chatlogs',null)">View All</button>
+        </div>
+        <div class="section-body" id="recent-logs-preview"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT LOGS -->
+  <div class="page" id="page-chatlogs">
+    <div class="topbar">
+      <h1>Chat <span>Logs</span></h1>
+      <div class="topbar-right">
+        <button class="btn btn-success" onclick="exportCSV()"><i class="fas fa-file-csv"></i> Export CSV</button>
+        <button class="btn btn-outline" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+        <button class="btn btn-danger btn-sm" onclick="clearLogs()"><i class="fas fa-trash"></i> Clear</button>
+      </div>
+    </div>
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title"><i class="fas fa-comments"></i> All Conversations</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" class="form-input" id="log-search" placeholder="Search..." style="width:170px;padding:7px 12px" oninput="filterLogs()"/>
+          <select class="form-select" id="log-filter" style="width:130px;padding:7px 12px" onchange="filterLogs()">
+            <option value="">All Intents</option>
+            <option>admission</option><option>courses</option><option>fees</option>
+            <option>results</option><option>faculty</option><option>contact</option><option>unknown</option>
+          </select>
+        </div>
+      </div>
+      <div class="section-body" id="chat-logs-list"></div>
+    </div>
+  </div>
+
+  <!-- FAQ MANAGER -->
+  <div class="page" id="page-faq">
+    <div class="topbar">
+      <h1>FAQ <span>Manager</span></h1>
+      <button class="btn btn-primary" onclick="openModal('add-faq-modal')"><i class="fas fa-plus"></i> Add FAQ</button>
+    </div>
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title"><i class="fas fa-list"></i> All FAQs</div>
+        <select class="form-select" id="faq-cat-filter" style="width:150px;padding:7px 12px" onchange="renderFAQs()">
+          <option value="">All Categories</option>
+          <option>admission</option><option>courses</option><option>fees</option>
+          <option>results</option><option>faculty</option><option>contact</option><option>general</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="faq-table">
+          <thead><tr><th>#</th><th>Question</th><th>Answer</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="faq-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTENTS -->
+  <div class="page" id="page-intents">
+    <div class="topbar"><h1>Intent <span>Analytics</span></h1></div>
+    <div class="three-col">
+      <div class="section-card" style="grid-column:1/3">
+        <div class="section-header"><div class="section-title"><i class="fas fa-brain"></i> Intent Frequency</div></div>
+        <div class="section-body" id="intent-full-bars"></div>
+      </div>
+      <div class="section-card">
+        <div class="section-header"><div class="section-title"><i class="fas fa-trophy"></i> Top 5</div></div>
+        <div class="section-body" id="top5-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLLEGE INFO EDITOR -->
+  <div class="page" id="page-college-info">
+    <div class="topbar">
+      <h1>College <span>Info Editor</span></h1>
+      <button class="btn btn-primary" onclick="saveCollegeInfo()"><i class="fas fa-save"></i> Save All Changes</button>
+    </div>
+    <div class="two-col">
+      <!-- Contact Info -->
+      <div class="section-card">
+        <div class="section-header"><div class="section-title"><i class="fas fa-phone"></i> Contact Information</div></div>
+        <div class="section-body">
+          <div class="info-section">
+            <div class="info-section-title"><i class="fas fa-phone-alt"></i> Contact Details</div>
+            <div class="info-field"><label>Phone Number</label><input id="info-phone" value="0175-2215835"/></div>
+            <div class="info-field"><label>Email 1</label><input id="info-email1" value="khalsacollegepatiala@gmail.com"/></div>
+            <div class="info-field"><label>Email 2</label><input id="info-email2" value="info@khalsacollegepatiala.org"/></div>
+            <div class="info-field"><label>Address</label>
+              <textarea id="info-address">General Shivdev Singh Diwan Gurbachan Singh Khalsa College Patiala, Badungar Road, Patiala, Punjab – 147001</textarea>
+            </div>
+            <div class="info-field"><label>Office Hours</label><input id="info-hours" value="Mon–Sat, 9:00 AM – 4:00 PM"/></div>
+          </div>
+        </div>
+      </div>
+      <!-- Admission Info -->
+      <div class="section-card">
+        <div class="section-header"><div class="section-title"><i class="fas fa-university"></i> Admission Info</div></div>
+        <div class="section-body">
+          <div class="info-section">
+            <div class="info-section-title"><i class="fas fa-info-circle"></i> Admission Status</div>
+            <div class="info-field"><label>Status</label>
+              <select class="form-select" id="info-admission-status">
+                <option value="closed">🚫 Closed</option>
+                <option value="open">✅ Open</option>
+                <option value="soon">📅 Opening Soon</option>
+              </select>
+            </div>
+            <div class="info-field"><label>Session Year</label><input id="info-session" value="2025-26"/></div>
+            <div class="info-field"><label>Portal URL</label><input id="info-portal" value="https://kcpadmissions.in"/></div>
+            <div class="info-field"><label>Important Dates</label>
+              <textarea id="info-dates">Important Admission Dates for session 2025-26 will be updated soon. Online Registration has been started.</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Fee Info -->
+      <div class="section-card">
+        <div class="section-header"><div class="section-title"><i class="fas fa-rupee-sign"></i> Fee Information</div></div>
+        <div class="section-body">
+          <div class="info-section">
+            <div class="info-section-title"><i class="fas fa-graduation-cap"></i> M.Sc IT Fees</div>
+            <div class="form-row">
+              <div class="info-field"><label>1st Semester</label><input id="info-fee-sem1" value="₹28,040"/></div>
+              <div class="info-field"><label>2nd Semester</label><input id="info-fee-sem2" value="₹12,050"/></div>
+            </div>
+          </div>
+          <div class="info-section" style="margin-top:12px">
+            <div class="info-section-title"><i class="fas fa-link"></i> Fee Portal</div>
+            <div class="info-field"><label>Fee Portal URL</label><input id="info-fee-portal" value="https://www.kcpadmissions.in"/></div>
+            <div class="info-field"><label>Fee Note</label>
+              <textarea id="info-fee-note" style="min-height:55px">Fees are approximate. Contact office or reception for exact details.</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Faculty -->
+      <div class="section-card">
+        <div class="section-header"><div class="section-title"><i class="fas fa-chalkboard-teacher"></i> Faculty Contacts</div></div>
+        <div class="section-body">
+          <div class="info-section">
+            <div class="info-section-title"><i class="fas fa-crown"></i> Principal</div>
+            <div class="info-field"><label>Name</label><input id="info-principal-name" value="Dr. Dharminder Singh Ubha"/></div>
+            <div class="info-field"><label>Phone</label><input id="info-principal-phone" value="98557-11380"/></div>
+          </div>
+          <div class="info-section" style="margin-top:12px">
+            <div class="info-section-title"><i class="fas fa-clipboard-check"></i> Controller of Exam</div>
+            <div class="info-field"><label>Name</label><input id="info-coe-name" value="Dr. Jaspreet Kaur"/></div>
+            <div class="info-field"><label>Phone</label><input id="info-coe-phone" value="97804-84847"/></div>
+            <div class="info-field"><label>Email</label><input id="info-coe-email" value="kcpexamgrievance@gmail.com"/></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEYWORDS -->
+  <div class="page" id="page-keywords">
+    <div class="topbar"><h1>Keyword <span>Reference</span></h1></div>
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title"><i class="fas fa-tags"></i> Intent → Keyword Map</div>
+        <span style="font-size:12px;color:var(--muted)">These keywords trigger bot responses</span>
+      </div>
+      <div class="section-body" id="keyword-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ ADD FAQ MODAL ══ -->
+<div class="modal-overlay" id="add-faq-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New FAQ</div>
+      <button class="modal-close" onclick="closeModal('add-faq-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="form-group"><label class="form-label">Question</label>
+      <input class="form-input" id="faq-q" placeholder="e.g. What is the last date for admission?"/></div>
+    <div class="form-group"><label class="form-label">Answer</label>
+      <textarea class="form-textarea" id="faq-a" placeholder="Type the answer here..."></textarea></div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-select" id="faq-cat">
+        <option>general</option><option>admission</option><option>courses</option>
+        <option>fees</option><option>results</option><option>faculty</option><option>contact</option>
+      </select></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-outline" onclick="closeModal('add-faq-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addFAQ()"><i class="fas fa-plus"></i> Add FAQ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EDIT FAQ MODAL ══ -->
+<div class="modal-overlay" id="edit-faq-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit FAQ</div>
+      <button class="modal-close" onclick="closeModal('edit-faq-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <input type="hidden" id="edit-faq-id"/>
+    <div class="form-group"><label class="form-label">Question</label>
+      <input class="form-input" id="edit-faq-q"/></div>
+    <div class="form-group"><label class="form-label">Answer</label>
+      <textarea class="form-textarea" id="edit-faq-a"></textarea></div>
+    <div class="form-group"><label class="form-label">Category</label>
+      <select class="form-select" id="edit-faq-cat">
+        <option>general</option><option>admission</option><option>courses</option>
+        <option>fees</option><option>results</option><option>faculty</option><option>contact</option>
+      </select></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-outline" onclick="closeModal('edit-faq-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditFAQ()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API='http://localhost:5000';
+let faqs=[], logs=[];
+
+// ── AUTH ──────────────────────────────────────────────────────
+const ADMIN_USER='admin', ADMIN_PASS='admin123';
+
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    document.getElementById('login-page').style.display='none';
+    sessionStorage.setItem('kcp-admin','1');
+    init();
+  } else {
+    const err=document.getElementById('login-err');
+    err.style.display='flex'; err.style.alignItems='center'; err.style.gap='8px';
+    setTimeout(()=>err.style.display='none',3000);
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('kcp-admin');
+  location.reload();
+}
+
+function checkAuth(){
+  if(sessionStorage.getItem('kcp-admin')==='1'){
+    document.getElementById('login-page').style.display='none';
+    init();
+  }
+}
+
+// ── SIDEBAR MOBILE ────────────────────────────────────────────
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sb-overlay').classList.toggle('open');
+}
+
+// ── PAGE NAV ──────────────────────────────────────────────────
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  if(window.innerWidth<=680) toggleSidebar();
+  if(id==='dashboard') loadDashboard();
+  if(id==='chatlogs') renderLogs();
+  if(id==='faq') renderFAQs();
+  if(id==='intents') renderIntentsFull();
+  if(id==='keywords') renderKeywords();
+}
+
+// ── SAMPLE DATA ───────────────────────────────────────────────
+const SAMPLE_LOGS=[
+  {id:1,user_message:'admission kado start hogi',intent:'admission',timestamp:'2025-03-13 09:12'},
+  {id:2,user_message:'BCA di fees kitni hai',intent:'ug',timestamp:'2025-03-13 09:18'},
+  {id:3,user_message:'result kaise check karen',intent:'results',timestamp:'2025-03-13 10:05'},
+  {id:4,user_message:'principal da number',intent:'faculty',timestamp:'2025-03-13 10:32'},
+  {id:5,user_message:'college kithey hai',intent:'contact',timestamp:'2025-03-13 11:00'},
+  {id:6,user_message:'msc it fees',intent:'pg',timestamp:'2025-03-13 11:44'},
+  {id:7,user_message:'bca course available hai',intent:'ug',timestamp:'2025-03-13 12:10'},
+  {id:8,user_message:'hostel facility hai',intent:'hostel',timestamp:'2025-03-13 12:55'},
+];
+const SAMPLE_INTENTS=[
+  {intent:'fees',count:48},{intent:'admission',count:41},{intent:'courses',count:35},
+  {intent:'results',count:28},{intent:'contact',count:22},{intent:'faculty',count:18},
+  {intent:'ug',count:15},{intent:'pg',count:12},{intent:'timetable',count:9},{intent:'hostel',count:5}
+];
+const BADGE_COLORS={
+  admission:'pink',courses:'purple',fees:'amber',results:'green',faculty:'blue',
+  contact:'pink',pg:'purple',ug:'green',diploma:'amber',certificate:'blue',
+  general:'purple',unknown:'amber',eligibility:'pink',portal:'purple',
+  process:'green',dates:'amber',timetable:'blue',library:'green',hostel:'amber'
+};
+const KEYWORDS={
+  admission:['admission','admit','apply','register','join','session','2025','closed','seat'],
+  eligibility:['eligibility','eligible','criteria','minimum marks','10+2'],
+  portal:['portal','link','apply online','kcpadmissions'],
+  process:['process','steps','how to apply','document','upload'],
+  dates:['last date','deadline','kado','admission date'],
+  pg:['pg','postgraduate','msc','mcom','mba','masters','pgdca'],
+  ug:['ug','undergraduate','bca','bba','bcom','bsc','bachelor'],
+  diploma:['diploma','hardware','networking','french','greenhouse'],
+  certificate:['certificate','sikh studies','web development','spoken english'],
+  courses:['course','courses','program','degree','study'],
+  fees:['fee','fees','cost','rupee','₹','how much','kitni','payment'],
+  results:['result','results','marks','grade','merit'],
+  datesheet:['datesheet','exam date','exam schedule','paper date'],
+  timetable:['timetable','time table','class schedule','class time'],
+  faculty:['teacher','faculty','professor','principal','controller'],
+  contact:['contact','phone','number','email','address','kithey'],
+  library:['library','books','reading room'],
+  hostel:['hostel','accommodation','stay','boarding']
+};
+
+// ── API ───────────────────────────────────────────────────────
+async function fetchStats(){
+  try{const r=await fetch(API+'/api/admin/stats');return await r.json();}catch{return null;}
+}
+async function fetchFAQs(){
+  try{const r=await fetch(API+'/api/faq');const d=await r.json();faqs=d.faqs||[];}catch{faqs=[];}
+}
+async function fetchLogs(){
+  try{const r=await fetch(API+'/api/logs');const d=await r.json();logs=d.logs||[];}catch{logs=SAMPLE_LOGS;}
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+async function loadDashboard(){
+  const s=await fetchStats();
+  document.getElementById('stat-total').textContent    = s?.total_chats    ?? '124';
+  document.getElementById('stat-sessions').textContent = s?.total_sessions ?? '38';
+  document.getElementById('stat-faqs').textContent     = s?.active_faqs    ?? (faqs.filter(f=>f.is_active!==false).length || '0');
+  document.getElementById('stat-top').textContent      = s?.top_intent     ?? 'fees';
+  document.getElementById('stat-today').textContent    = s ? `Today: ${s.today_chats||0}` : 'Demo data';
+  renderIntentBars('intent-bars',SAMPLE_INTENTS.slice(0,6));
+  renderRecentLogs();
+}
+
+function refreshStats(){loadDashboard();showToast('Stats refreshed! ✨');}
+
+// ── INTENT BARS ───────────────────────────────────────────────
+function renderIntentBars(id,data){
+  const el=document.getElementById(id);
+  if(!data.length){el.innerHTML='<div class="empty"><i class="fas fa-chart-bar"></i><p>No data yet</p></div>';return;}
+  const max=Math.max(...data.map(d=>d.count));
+  el.innerHTML=data.map(d=>`
+    <div class="bar-row">
+      <div class="bar-label">${d.intent}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(d.count/max*100)}%"></div></div>
+      <div class="bar-count">${d.count}</div>
+    </div>`).join('');
+}
+function renderIntentsFull(){
+  renderIntentBars('intent-full-bars',SAMPLE_INTENTS);
+  document.getElementById('top5-list').innerHTML=SAMPLE_INTENTS.slice(0,5).map((d,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--blush-dark)">
+      <div style="width:22px;height:22px;border-radius:50%;background:var(--rose-pale);color:var(--rose);
+        display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${i+1}</div>
+      <div style="flex:1;font-size:13px;font-weight:600">${d.intent}</div>
+      <span class="badge badge-${BADGE_COLORS[d.intent]||'pink'}">${d.count}</span>
+    </div>`).join('');
+}
+
+// ── RECENT LOGS ───────────────────────────────────────────────
+function renderRecentLogs(){
+  const data=(logs.length?logs:SAMPLE_LOGS).slice(0,4);
+  document.getElementById('recent-logs-preview').innerHTML=data.map(l=>`
+    <div class="log-item">
+      <div class="log-avatar user"><i class="fas fa-user"></i></div>
+      <div><div class="log-msg">${esc(l.user_message)}<span class="log-intent">${l.intent}</span></div>
+      <div class="log-meta">${l.timestamp||'Just now'}</div></div>
+    </div>`).join('');
+}
+
+// ── ALL LOGS ──────────────────────────────────────────────────
+function renderLogs(){displayLogs(logs.length?logs:SAMPLE_LOGS);}
+function displayLogs(data){
+  const el=document.getElementById('chat-logs-list');
+  if(!data.length){el.innerHTML='<div class="empty"><i class="fas fa-comments"></i><p>No logs found</p></div>';return;}
+  el.innerHTML=data.map(l=>`
+    <div class="log-item">
+      <div class="log-avatar user"><i class="fas fa-user"></i></div>
+      <div style="flex:1">
+        <div class="log-msg">${esc(l.user_message)}</div>
+        <div class="log-meta">${l.timestamp||''}<span class="log-intent">${l.intent}</span></div>
+      </div>
+    </div>`).join('');
+}
+function filterLogs(){
+  const s=document.getElementById('log-search').value.toLowerCase();
+  const f=document.getElementById('log-filter').value;
+  displayLogs((logs.length?logs:SAMPLE_LOGS).filter(l=>
+    (!s||l.user_message.toLowerCase().includes(s))&&(!f||l.intent===f)));
+}
+function clearLogs(){if(!confirm('Clear all old chat logs?'))return;showToast('Old logs cleared! 🗑️');}
+
+// ── EXPORT CSV ────────────────────────────────────────────────
+function exportCSV(){
+  const data=logs.length?logs:SAMPLE_LOGS;
+  const rows=[['ID','Session ID','User Message','Intent','Timestamp']];
+  data.forEach(l=>rows.push([l.id||'',l.session_id||'',`"${(l.user_message||'').replace(/"/g,'""')}"`,l.intent||'',l.timestamp||'']));
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  downloadFile(csv,'chat_logs_kcp.csv','text/csv');
+  showToast('CSV exported! 📊');
+}
+
+// ── EXPORT EXCEL (HTML table trick) ──────────────────────────
+function exportExcel(){
+  const data=logs.length?logs:SAMPLE_LOGS;
+  let html=`<table><tr><th>ID</th><th>User Message</th><th>Intent</th><th>Timestamp</th></tr>`;
+  data.forEach(l=>{html+=`<tr><td>${l.id||''}</td><td>${esc(l.user_message)}</td><td>${l.intent||''}</td><td>${l.timestamp||''}</td></tr>`;});
+  html+='</table>';
+  const blob=new Blob(['\ufeff'+html],{type:'application/vnd.ms-excel'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='chat_logs_kcp.xls';a.click();
+  URL.revokeObjectURL(url);
+  showToast('Excel exported! 📗');
+}
+
+function downloadFile(content,filename,type){
+  const blob=new Blob([content],{type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── FAQ MANAGER ───────────────────────────────────────────────
+function renderFAQs(){
+  const cat=document.getElementById('faq-cat-filter')?.value||'';
+  const filtered=faqs.filter(f=>!cat||f.category===cat);
+  const tbody=document.getElementById('faq-tbody');
+  if(!filtered.length){
+    tbody.innerHTML='<tr><td colspan="6"><div class="empty"><i class="fas fa-question-circle"></i><p>No FAQs found. Add one!</p></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML=filtered.map((f,i)=>`
+    <tr>
+      <td style="color:var(--light);font-weight:700">${i+1}</td>
+      <td style="max-width:180px">${esc(f.question)}</td>
+      <td style="max-width:220px;color:var(--muted)">${esc((f.answer||'').substring(0,70))}${(f.answer||'').length>70?'…':''}</td>
+      <td><span class="badge badge-${BADGE_COLORS[f.category]||'pink'}">${f.category}</span></td>
+      <td><label class="toggle"><input type="checkbox" ${f.is_active!==false?'checked':''} onchange="toggleFAQ(${i},this.checked)"/>
+        <span class="toggle-slider"></span></label></td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="openEditFAQ(${i})"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="deleteFAQ(${i})"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+}
+function addFAQ(){
+  const q=document.getElementById('faq-q').value.trim();
+  const a=document.getElementById('faq-a').value.trim();
+  const c=document.getElementById('faq-cat').value;
+  if(!q||!a){showToast('Please fill all fields!',true);return;}
+  faqs.push({question:q,answer:a,category:c,is_active:true});
+  fetch(API+'/api/faq',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({question:q,answer:a,category:c})}).catch(()=>{});
+  document.getElementById('faq-q').value='';
+  document.getElementById('faq-a').value='';
+  closeModal('add-faq-modal');
+  renderFAQs();
+  document.getElementById('stat-faqs').textContent=faqs.filter(f=>f.is_active!==false).length;
+  showToast('FAQ added! ✅');
+}
+function openEditFAQ(idx){
+  const f=faqs[idx];
+  document.getElementById('edit-faq-id').value=idx;
+  document.getElementById('edit-faq-q').value=f.question;
+  document.getElementById('edit-faq-a').value=f.answer;
+  document.getElementById('edit-faq-cat').value=f.category;
+  openModal('edit-faq-modal');
+}
+function saveEditFAQ(){
+  const idx=parseInt(document.getElementById('edit-faq-id').value);
+  faqs[idx].question=document.getElementById('edit-faq-q').value.trim();
+  faqs[idx].answer=document.getElementById('edit-faq-a').value.trim();
+  faqs[idx].category=document.getElementById('edit-faq-cat').value;
+  closeModal('edit-faq-modal');renderFAQs();showToast('FAQ updated! ✏️');
+}
+function deleteFAQ(idx){
+  if(!confirm('Delete this FAQ?'))return;
+  const id=faqs[idx].id;faqs.splice(idx,1);
+  if(id)fetch(API+'/api/faq/'+id,{method:'DELETE'}).catch(()=>{});
+  renderFAQs();showToast('FAQ deleted! 🗑️');
+}
+function toggleFAQ(idx,active){faqs[idx].is_active=active;showToast(active?'FAQ enabled ✅':'FAQ disabled ⏸️');}
+
+// ── COLLEGE INFO SAVE ─────────────────────────────────────────
+function saveCollegeInfo(){
+  const info={
+    phone:   document.getElementById('info-phone').value,
+    email1:  document.getElementById('info-email1').value,
+    email2:  document.getElementById('info-email2').value,
+    address: document.getElementById('info-address').value,
+    hours:   document.getElementById('info-hours').value,
+    admission_status: document.getElementById('info-admission-status').value,
+    session: document.getElementById('info-session').value,
+    portal:  document.getElementById('info-portal').value,
+    dates:   document.getElementById('info-dates').value,
+    fee_sem1:document.getElementById('info-fee-sem1').value,
+    fee_sem2:document.getElementById('info-fee-sem2').value,
+    fee_note:document.getElementById('info-fee-note').value,
+    principal_name: document.getElementById('info-principal-name').value,
+    principal_phone:document.getElementById('info-principal-phone').value,
+    coe_name: document.getElementById('info-coe-name').value,
+    coe_phone:document.getElementById('info-coe-phone').value,
+    coe_email:document.getElementById('info-coe-email').value,
+  };
+  localStorage.setItem('kcp-college-info',JSON.stringify(info));
+  fetch(API+'/api/college-info',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(info)}).catch(()=>{});
+  showToast('College info saved! 💾');
+}
+function loadCollegeInfo(){
+  const saved=localStorage.getItem('kcp-college-info');
+  if(!saved)return;
+  const info=JSON.parse(saved);
+  Object.entries(info).forEach(([k,v])=>{
+    const el=document.getElementById('info-'+k.replace(/_/g,'-'));
+    if(el)el.value=v;
+  });
+}
+
+// ── KEYWORDS ─────────────────────────────────────────────────
+function renderKeywords(){
+  document.getElementById('keyword-grid').innerHTML=Object.entries(KEYWORDS).map(([intent,words])=>`
+    <div style="background:var(--blush);border-radius:var(--radius-md);padding:14px">
+      <div style="font-size:13px;font-weight:700;color:var(--rose);margin-bottom:10px">
+        <span class="badge badge-${BADGE_COLORS[intent]||'pink'}">${intent}</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${words.map(w=>`<span style="background:var(--white);border:1px solid var(--blush-dark);
+          border-radius:var(--pill);padding:2px 9px;font-size:11.5px;color:var(--text)">${w}</span>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// ── MODAL ─────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+});
+
+// ── TOAST ─────────────────────────────────────────────────────
+let tt;
+function showToast(msg,error=false){
+  const t=document.getElementById('toast');
+  t.innerHTML=`<i class="fas fa-${error?'exclamation-circle':'check-circle'}"></i> ${msg}`;
+  t.className='toast'+(error?' error':'')+' show';
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function esc(t=''){return String(t).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+
+// ── INIT ──────────────────────────────────────────────────────
+async function init(){
+  await fetchFAQs();await fetchLogs();
+  loadCollegeInfo();loadDashboard();renderKeywords();
+}
+checkAuth();
+</script>
+</body>
+</html>
