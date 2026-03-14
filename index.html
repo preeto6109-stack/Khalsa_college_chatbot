@@ -11,26 +11,84 @@
 
     <div class="chat-container" id="chatContainer">
 
-        <!-- Header -->
+        <!-- ── Header ── -->
         <div class="chat-header">
+
+            <!-- Left: Avatar + Title -->
             <div class="header-content">
-                <div class="header-icon-wrap">
-                    <i class="fas fa-graduation-cap"></i>
+                <!-- Animated Girl Avatar -->
+                <div class="avatar-wrap" id="headerAvatar">
+                    <svg class="girl-avatar" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Hair back -->
+                        <ellipse cx="40" cy="32" rx="22" ry="24" fill="#3D1F0A"/>
+                        <!-- Hair sides flowing -->
+                        <ellipse cx="18" cy="44" rx="7" ry="14" fill="#3D1F0A"/>
+                        <ellipse cx="62" cy="44" rx="7" ry="14" fill="#3D1F0A"/>
+                        <!-- Face -->
+                        <ellipse cx="40" cy="36" rx="17" ry="18" fill="#FDDBB4"/>
+                        <!-- Hair top / fringe -->
+                        <ellipse cx="40" cy="20" rx="18" ry="10" fill="#4A2505"/>
+                        <path d="M24 24 Q28 14 40 13 Q52 14 56 24 Q50 18 40 18 Q30 18 24 24Z" fill="#4A2505"/>
+                        <!-- Eyes -->
+                        <ellipse cx="33" cy="35" rx="3" ry="3.2" fill="#fff"/>
+                        <ellipse cx="47" cy="35" rx="3" ry="3.2" fill="#fff"/>
+                        <circle cx="33.8" cy="35.5" r="1.8" fill="#3D1F0A" class="eye-l"/>
+                        <circle cx="47.8" cy="35.5" r="1.8" fill="#3D1F0A" class="eye-r"/>
+                        <!-- Eye shine -->
+                        <circle cx="34.5" cy="34.5" r="0.6" fill="white"/>
+                        <circle cx="48.5" cy="34.5" r="0.6" fill="white"/>
+                        <!-- Eyebrows -->
+                        <path d="M30 31 Q33 29.5 36 31" stroke="#3D1F0A" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+                        <path d="M44 31 Q47 29.5 50 31" stroke="#3D1F0A" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+                        <!-- Nose -->
+                        <path d="M39 38 Q40 40 41 38" stroke="#E8A87C" stroke-width="1" fill="none" stroke-linecap="round"/>
+                        <!-- Smile -->
+                        <path d="M34 43 Q40 48 46 43" stroke="#C4637A" stroke-width="1.6" fill="none" stroke-linecap="round" class="smile"/>
+                        <!-- Cheeks blush -->
+                        <ellipse cx="28" cy="41" rx="4" ry="2.5" fill="rgba(232,160,176,0.45)"/>
+                        <ellipse cx="52" cy="41" rx="4" ry="2.5" fill="rgba(232,160,176,0.45)"/>
+                        <!-- Dupatta/scarf -->
+                        <path d="M18 56 Q20 48 25 46 Q32 58 40 58 Q48 58 55 46 Q60 48 62 56 Q56 70 40 72 Q24 70 18 56Z" fill="#C4637A"/>
+                        <path d="M25 46 Q32 54 40 54 Q48 54 55 46" stroke="rgba(255,255,255,0.3)" stroke-width="1" fill="none"/>
+                        <!-- Kurta -->
+                        <path d="M22 58 Q20 68 20 80 L60 80 Q60 68 58 58 Q50 62 40 62 Q30 62 22 58Z" fill="#9B8FC4"/>
+                        <!-- Dupatta detail dots -->
+                        <circle cx="32" cy="50" r="1" fill="rgba(255,255,255,0.4)"/>
+                        <circle cx="40" cy="52" r="1" fill="rgba(255,255,255,0.4)"/>
+                        <circle cx="48" cy="50" r="1" fill="rgba(255,255,255,0.4)"/>
+                    </svg>
+                    <!-- Blink overlay -->
+                    <div class="avatar-blink"></div>
                 </div>
                 <div>
                     <h1>Khalsa College Patiala</h1>
-                    <p>College Inquiry Chatbot ✨</p>
+                    <p>Preet · College Inquiry Assistant ✨</p>
                 </div>
             </div>
-            <button class="clear-btn" onclick="clearChat()" title="Clear Chat">
-                <i class="fas fa-trash"></i>
-            </button>
+
+            <!-- Right: Lang Toggle + Dark Mode + Clear -->
+            <div class="header-actions">
+                <div class="lang-toggle" id="langToggle">
+                    <button class="lang-btn" data-lang="pa" onclick="setLanguage('pa')" title="Punjabi">ਪੰਜਾਬੀ</button>
+                    <button class="lang-btn" data-lang="hi" onclick="setLanguage('hi')" title="Hindi">हिंदी</button>
+                    <button class="lang-btn active" data-lang="en" onclick="setLanguage('en')" title="English">EN</button>
+                </div>
+                <button class="clear-btn" id="dark-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="clear-btn" onclick="clearChat()" title="Clear Chat">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         </div>
 
-        <!-- Messages -->
+        <!-- ── Office Status Bar ── -->
+        <div id="office-status-bar" class="office-status-bar"></div>
+
+        <!-- ── Messages ── -->
         <div class="chat-messages" id="chatMessages"></div>
 
-        <!-- Input -->
+        <!-- ── Input ── -->
         <div class="chat-input-container">
             <div class="input-wrapper">
                 <input
@@ -48,6 +106,17 @@
         </div>
 
     </div>
+
+    <!-- ── WhatsApp Floating Button ── -->
+    <a  id="whatsapp-float"
+        href="https://wa.me/911752215835?text=Hello%2C%20I%20have%20an%20inquiry%20about%20Khalsa%20College%20Patiala"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Chat on WhatsApp">
+        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="white">
+            <path d="M16 3C9.373 3 4 8.373 4 15c0 2.385.668 4.61 1.832 6.5L4 29l7.75-1.812A11.93 11.93 0 0 0 16 27c6.627 0 12-5.373 12-12S22.627 3 16 3zm0 2c5.523 0 10 4.477 10 10s-4.477 10-10 10a9.93 9.93 0 0 1-5.031-1.363l-.363-.219-4.594 1.074 1.094-4.5-.234-.375A9.93 9.93 0 0 1 6 15c0-5.523 4.477-10 10-10zm-3.188 5c-.199 0-.52.074-.793.367-.273.293-1.043 1.02-1.043 2.484 0 1.465 1.066 2.883 1.215 3.082.148.199 2.074 3.168 5.031 4.316.703.242 1.25.387 1.676.496.703.18 1.344.154 1.851.094.563-.066 1.734-.711 1.98-1.398.247-.688.247-1.277.173-1.398-.074-.121-.273-.195-.57-.34-.3-.148-1.762-.867-2.035-.965-.273-.098-.473-.148-.672.148-.2.293-.773.965-.945 1.164-.172.199-.348.223-.645.074-.3-.148-1.262-.465-2.406-1.484-.887-.793-1.484-1.77-1.657-2.07-.172-.297-.018-.457.129-.605.133-.133.297-.348.445-.52.148-.172.199-.298.297-.496.098-.199.05-.371-.025-.52-.074-.148-.672-1.617-.92-2.21-.242-.578-.489-.5-.672-.51a12.47 12.47 0 0 0-.57-.01z"/>
+        </svg>
+    </a>
 
     <script src="script.js"></script>
 </body>
