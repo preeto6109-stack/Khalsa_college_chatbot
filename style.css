@@ -169,15 +169,6 @@ html,body{
 .send-btn:hover{transform:scale(1.1) rotate(-5deg);box-shadow:0 6px 20px rgba(196,99,122,.5);}
 .send-btn:active{transform:scale(.95);}
 
-/* ── WhatsApp ── */
-#whatsapp-float{position:fixed;bottom:28px;right:28px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--wa-green),var(--wa-dark));display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-wa);z-index:999;text-decoration:none;transition:var(--transition);animation:wa-pop .5s cubic-bezier(.34,1.56,.64,1) both;animation-delay:1.2s;opacity:0;}
-@keyframes wa-pop{from{opacity:0;transform:scale(0) rotate(-30deg)}to{opacity:1;transform:scale(1) rotate(0)}}
-#whatsapp-float:hover{transform:scale(1.12) rotate(5deg);box-shadow:0 12px 36px rgba(37,211,102,.55);}
-#whatsapp-float::before{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(37,211,102,.5);animation:wa-ring 2.4s ease-in-out infinite;}
-@keyframes wa-ring{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.2);opacity:0}}
-#whatsapp-float::after{content:'Chat on WhatsApp';position:absolute;right:64px;background:#1a1a2e;color:#fff;font-family:var(--font-sans);font-size:12px;font-weight:600;padding:6px 12px;border-radius:var(--radius-md);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s ease;}
-#whatsapp-float:hover::after{opacity:1;}
-
 /* ── Feedback ── */
 .feedback-container{animation:fade-up .28s ease both;padding:2px 0 6px;}
 .feedback-card{display:inline-flex;align-items:center;gap:10px;background:var(--white);border:1px solid rgba(196,99,122,.15);border-radius:var(--radius-pill);padding:8px 16px;box-shadow:var(--shadow-sm);}
