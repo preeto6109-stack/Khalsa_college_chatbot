@@ -2,4 +2,4 @@ flask
 flask-cors
 gunicorn
 groq
--dotenv
+python-dotenv
