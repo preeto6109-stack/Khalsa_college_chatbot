@@ -15,7 +15,7 @@ let currentLang = localStorage.getItem('kcp-lang') || 'en';
 // Local development pe: 'http://localhost:5000'
 // Production (same server) pe: '' (empty = same origin)
 // Render/Railway deploy kita hove: 'https://your-app.onrender.com'
-const SERVER_URL = 'http://localhost:5000';  // ← apna URL paste karo jado deploy karo
+const SERVER_URL = 'https://khalsa-college-chatbot-2.onrender.com';  // ← apna URL paste karo jado deploy karo
 
 async function callServer(message) {
     try {
