@@ -209,5 +209,5 @@ if __name__ == '__main__':
     print(f"🤖  AI Mode: {'Groq ON ✅' if groq_client else 'Rule-Based ⚠️'}")
     print("🌐  Open: http://localhost:5000")
     print("=" * 50)
-    port = int(os.environ.get('PORT', 10000))
-app.run(debug=False, host='0.0.0.0', port=port)
+port = int(os.environ.get("PORT", 10000))
+app.run(host="0.0.0.0", port=port)
