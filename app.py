@@ -1,61 +1,59 @@
+from dotenv import load_dotenv
+load_dotenv()
+import os
+os.environ["GROQ_API_KEY"] = "gsk_xxxxxxxx"
+
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from datetime import datetime
 import os
 
 # ============================================================
-#  Khalsa College Patiala — Chatbot Flask Backend
-#  app.py — With Groq AI + Rule-Based Fallback
+#  Khalsa College Patiala — Chatbot Flask Backend  v2.0
+#  Connects with script.js v5.0
 # ============================================================
 
-# ── Groq AI Setup ─────────────────────────────────────────────
+# ── Groq AI ───────────────────────────────────────────────────
 try:
     from groq import Groq
     GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-    groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
-    if groq_client:
-        print("✅ Groq AI connected!")
-    else:
-        print("⚠️  No GROQ_API_KEY — using rule-based mode")
+    groq_client  = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+    print("✅ Groq AI connected!" if groq_client else "⚠️  No GROQ_API_KEY — rule-based mode")
 except ImportError:
     groq_client = None
-    print("⚠️  groq package nahi — using rule-based mode")
+    print("⚠️  groq package nahi — rule-based mode")
 
-COLLEGE_SYSTEM_PROMPT = """Tu Khalsa College Patiala da helpful inquiry chatbot hai.
-Sirf college baare questions da jawab de — admissions, courses, fees, results, faculty, contact.
+COLLEGE_SYSTEM = """Tu Khalsa College Patiala di friendly inquiry assistant "Preet" hai.
+Sirf college baare questions da jawab de. Chhote, warm aur helpful jawab de.
+Emojis use kar. Punjabi/Hindi/English teeno samajh sakdi hai.
+College toh bahar de topics te na jaa.
 
-College di key info:
-- Phone: 0175-2215835
-- Email: khalsacollegepatiala@gmail.com
+College info:
+- Phone: 0175-2215835 | Email: khalsacollegepatiala@gmail.com
 - Address: Badungar Road, Patiala, Punjab 147001
-- Admission Portal: kcpadmissions.in
-- Results: kcpresults.in/results
+- Portal: kcpadmissions.in | Results: kcpresults.in/results
 - Principal: Dr. Dharminder Singh Ubha (98557-11380)
-- Controller of Exam: Dr. Jaspreet Kaur (97804-84847, kcpexamgrievance@gmail.com)
-- Deputy Controller: Dr. Jagjit Singh (78145-11707)
-- UG Courses: BCA, BBA, B.Com, B.Sc Medical/Non-Medical/CSM/Biotech/Agriculture, B.A, B.Voc
-- PG Courses: M.Sc IT, M.Sc Fashion, M.Sc Physics/Chemistry/Geography/Agriculture, M.Com, M.A, MBA, PGDCA
-- Diploma: Computer Hardware, Green House Tech, French
-- Certificate: 14 courses including Sikh Studies, Web Dev, Spoken English, Bakery etc.
-- M.Sc IT fees: Sem1=28040, Sem2=12050. Total approx 80000-100000
-- UG fees: BCA/BBA 60000-70000, B.Com 40000-60000, B.Sc 40000-100000
+- Controller: Dr. Jaspreet Kaur (97804-84847)
 - Admission 2025-26: CLOSED
-- Office Hours: Mon-Sat, 9AM-4PM
+- Office Hours: Mon-Sat 9AM-4PM"""
 
-Chhote, clear aur friendly jawab de. Punjabi/Hindi/English teeno samajh sakda hai.
-Emojis use kar jawab nu sundar banane vaaste.
-College toh bahar de topics te na jaa — sirf college info."""
-
-def get_ai_response(user_message):
-    """Groq AI toh response lo — fail hove ta None return karo"""
+def get_ai_response(message, username="", lang="en"):
     if not groq_client:
         return None
     try:
+        system = COLLEGE_SYSTEM
+        if username:
+            system += f"\nStudent da naam {username} hai — personally address kar."
+        if lang == "pa":
+            system += "\nPunjabi vich jawab de (Gurmukhi nahi, Roman Punjabi theek hai)."
+        elif lang == "hi":
+            system += "\nHindi vich jawab de."
+
         chat = groq_client.chat.completions.create(
             model="llama3-8b-8192",
             messages=[
-                {"role": "system", "content": COLLEGE_SYSTEM_PROMPT},
-                {"role": "user",   "content": user_message}
+                {"role": "system",  "content": system},
+                {"role": "user",    "content": message}
             ],
             max_tokens=400,
             temperature=0.7
@@ -66,183 +64,72 @@ def get_ai_response(user_message):
         return None
 
 app = Flask(__name__)
+
+# ── CORS — allow frontend to connect ─────────────────────────
+# Development: allow all origins
+# Production: change to your actual domain
+#   e.g. origins=["https://yourdomain.com"]
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# ── College Database (Rule-Based Fallback) ────────────────────
-COLLEGE_DB = {
-    "admission": {
-        "status": (
-            "🚫 <strong>Admission Status: CLOSED</strong> — Session 2025–26<br><br>"
-            "Admissions for Session 2025–26 are now closed.<br>"
-            "For more details, please visit the college in person.<br><br>"
-            "✨ <em>Stay curious. Stay ready. See you in the next cycle!</em>"
-        ),
-        "portal": (
-            "🌐 <strong>Online Admission Portal</strong><br><br>"
-            "👉 <a href='https://kcpadmissions.in' target='_blank'>kcpadmissions.in</a><br><br>"
-            "Register, fill form, upload documents &amp; pay fees — all online!"
-        ),
-        "process": (
-            "📋 <strong>Admission Process</strong><br><br>"
-            "<strong>Step 1:</strong> Visit kcpadmissions.in<br>"
-            "<strong>Step 2:</strong> Register with your basic details<br>"
-            "<strong>Step 3:</strong> Fill the Application Form online<br>"
-            "<strong>Step 4:</strong> Upload required documents as JPG<br>"
-            "<strong>Step 5:</strong> Pay Registration / Admission Fee online"
-        ),
-        "dates": (
-            "📅 <strong>Important Admission Dates — 2025-26</strong><br><br>"
-            "Exact dates will be updated soon on the official portal.<br><br>"
-            "✅ <strong>Online Registration:</strong> Started<br>"
-            "🔗 <a href='https://kcpadmissions.in' target='_blank'>Check Portal for Updates</a>"
-        ),
-        "eligibility": (
-            "✅ <strong>General Eligibility</strong><br><br>"
-            "🎓 <strong>UG Courses:</strong> 10+2 pass from recognised board<br>"
-            "🎓 <strong>PG Courses:</strong> Graduation with min. 50% marks<br>"
-            "🎓 <strong>M.Sc IT:</strong> Graduation (50%) from recognised university<br>"
-            "🎓 <strong>MBA:</strong> Graduation from recognised university<br><br>"
-            "ℹ️ Exact eligibility varies by course — visit portal for details."
-        )
-    },
-    "courses": {
-        "pg": (
-            "🎓 <strong>Postgraduate Courses</strong><br><br>"
-            "💻 M.Sc IT — ₹80,000–₹1,00,000<br>"
-            "👗 M.Sc Fashion Design — ₹80,000–₹1,20,000<br>"
-            "🔬 M.Sc Physics/Chemistry/Geography — ₹80,000–₹1,00,000<br>"
-            "🌾 M.Sc Agriculture — ₹1,00,000–₹1,50,000<br>"
-            "📊 M.Com — ₹60,000–₹80,000<br>"
-            "📚 M.A (Multiple subjects) — ₹25,000–₹50,000<br>"
-            "💼 MBA — Graduation required<br>"
-            "🖥️ PGDCA — ₹30,000–₹40,000"
-        ),
-        "ug": (
-            "🎓 <strong>Undergraduate Courses</strong><br><br>"
-            "💻 BCA — ₹60,000–₹70,000<br>"
-            "📈 BBA — ₹60,000–₹70,000<br>"
-            "🧾 B.Com/B.Com Hons. — ₹40,000–₹60,000<br>"
-            "🔬 B.Sc Medical/Non-Medical/CSM — ₹40,000–₹1,00,000<br>"
-            "🌾 B.Sc Agriculture — ₹1,50,000–₹2,00,000<br>"
-            "📖 B.A/B.A Hons. — ₹35,000–₹60,000<br>"
-            "🛠️ B.Voc — ₹70,000–₹90,000"
-        ),
-        "diploma": (
-            "📜 <strong>Diploma Courses (1 Year)</strong><br><br>"
-            "🖥️ Computer Hardware &amp; Networking — ₹15,000–₹25,000<br>"
-            "🌿 Green House Technology — ₹15,000–₹25,000<br>"
-            "🇫🇷 French/Intensive French — ₹10,000–₹20,000"
-        ),
-        "certificate": (
-            "🏆 <strong>Certificate Courses</strong><br><br>"
-            "Sikh Studies, Agriculture Accounting, Personality Development,<br>"
-            "Office Automation, Web Development, Bakery, Spoken English,<br>"
-            "Bee Keeping, Solar PV, Folk Music, Anchoring, Creative Writing,<br>"
-            "Translation, Pharmaceutical Chemistry — ₹3,000–₹10,000"
-        )
-    },
-    "fees": (
-        "💰 <strong>Fee Structure 2025–26</strong><br><br>"
-        "🔗 <a href='https://www.kcpadmissions.in' target='_blank'>kcpadmissions.in</a><br><br>"
-        "<strong>M.Sc IT:</strong> Sem1=₹28,040 | Sem2=₹12,050<br><br>"
-        "💳 Payment: Counter or Online portal<br><br>"
-        "ℹ️ Visit office for exact course-wise fees."
-    ),
-    "results": (
-        "📊 <strong>Results Portal</strong><br><br>"
-        "🔗 <a href='https://kcpresults.in/results' target='_blank'>kcpresults.in/results</a><br><br>"
-        "✉️ kcpexamgrievance@gmail.com<br>"
-        "📞 97804-84847 (Dr. Jaspreet Kaur)"
-    ),
-    "datesheet": (
-        "📅 <strong>Exam Datesheet</strong><br><br>"
-        "🔗 <a href='https://khalsacollegepatiala.org/datesheets' target='_blank'>khalsacollegepatiala.org/datesheets</a>"
-    ),
-    "timetable": (
-        "⏰ <strong>Class Timetable</strong><br><br>"
-        "Please visit the college office.<br>"
-        "📍 Badungar Road, Patiala | ☎️ 0175-2215835"
-    ),
-    "faculty": (
-        "👩‍🏫 <strong>Key Contacts</strong><br><br>"
-        "👑 Principal: Dr. Dharminder Singh Ubha | 📞 98557-11380<br><br>"
-        "🎯 Controller: Dr. Jaspreet Kaur | 📞 97804-84847<br>"
-        "✉️ kcpexamgrievance@gmail.com<br><br>"
-        "🔹 Deputy: Dr. Jagjit Singh | 📞 78145-11707"
-    ),
-    "contact": (
-        "📞 <strong>Contact Khalsa College Patiala</strong><br><br>"
-        "☎️ 0175-2215835<br>"
-        "✉️ khalsacollegepatiala@gmail.com<br><br>"
-        "📍 Badungar Road, Patiala, Punjab – 147001<br>"
-        "🕐 Mon–Sat, 9:00 AM – 4:00 PM"
-    ),
-    "library": "📚 Please visit the college library on campus for timings and facilities.",
-    "hostel":  "🏠 For hostel info, visit the college office. ☎️ 0175-2215835"
-}
-
+# ── Rule-Based Responses ──────────────────────────────────────
 KEYWORDS = {
-    "admission":   ["admission","admit","apply","register","join","session","2025","closed","seat","le sakde","le sakdi"],
-    "eligibility": ["eligibility","eligible","qualify","criteria","minimum marks","10+2","kitni percentage","marks chahide"],
-    "portal":      ["portal","link","online form","apply online","kcpadmissions","form bharo"],
-    "process":     ["process","procedure","steps","how to apply","document","upload","kive apply"],
-    "dates":       ["last date","deadline","kado tak","kado ton","admission date","end date"],
-    "pg":          ["pg","postgraduate","msc","m.sc","mcom","mba","masters","pgdca","post graduation"],
-    "ug":          ["ug","undergraduate","bca","bba","bcom","b.com","bsc","b.sc","bvoc","bachelor","b.a"],
+    "admission":   ["admission","admit","apply","register","join","2025","closed","seat","daakhla"],
+    "eligibility": ["eligibility","eligible","qualify","criteria","marks chahide"],
+    "portal":      ["portal","online form","kcpadmissions","form bharo"],
+    "process":     ["process","steps","how to apply","kive apply"],
+    "dates":       ["last date","deadline","kado tak","admission date"],
+    "pg":          ["pg","postgraduate","msc","mcom","mba","masters","pgdca"],
+    "ug":          ["ug","undergraduate","bca","bba","bcom","bsc","bvoc","bachelor"],
     "diploma":     ["diploma","hardware","networking","french","greenhouse"],
-    "certificate": ["certificate","sikh studies","web development","spoken english","bee keeping","bakery","anchoring"],
-    "courses":     ["course","courses","program","degree","study","stream","kaunse course","all course"],
-    "fees":        ["fee","fees","cost","rupee","₹","amount","how much","kitni","kitne","payment","lagdi","lagde"],
-    "results":     ["result","results","marks","grade","merit","pass","fail"],
-    "datesheet":   ["datesheet","date sheet","exam date","exam schedule","paper date","exam kado"],
-    "timetable":   ["timetable","time table","class schedule","class time","routine","class kado"],
-    "faculty":     ["teacher","faculty","professor","principal","controller","jaspreet","ubha","jagjit"],
-    "contact":     ["contact","phone","number","email","address","kithey hai","college address","kithey","kidhar"],
-    "library":     ["library","books","reading room","kitab"],
-    "hostel":      ["hostel","accommodation","stay","boarding","mess","rehna"]
+    "certificate": ["certificate","sikh studies","web development","spoken english","bakery"],
+    "courses":     ["course","courses","program","degree","study"],
+    "fees":        ["fee","fees","cost","rupee","how much","kitni","payment","lagdi"],
+    "results":     ["result","results","marks","grade","pass","fail"],
+    "datesheet":   ["datesheet","exam date","exam kado"],
+    "timetable":   ["timetable","class schedule","class kado"],
+    "faculty":     ["teacher","faculty","principal","controller","jaspreet","ubha"],
+    "contact":     ["contact","phone","number","email","address","kithey hai"],
+    "location":    ["map","direction","how to reach","location","kive jana"],
+    "whatsapp":    ["whatsapp","wa"],
+    "library":     ["library","books","kitab"],
+    "hostel":      ["hostel","accommodation","stay","boarding"],
+    "hours":       ["timing","office time","open time","kado khulda","office hours"]
 }
 
-FAQ_DB = []
+RESPONSES = {
+    "admission":   "🚫 <strong>Admission CLOSED</strong> — Session 2025–26<br>📎 <a href='https://kcpadmissions.in'>kcpadmissions.in</a>",
+    "eligibility": "✅ UG: 10+2 | PG: Graduation 50% | MBA: Any graduation<br>📎 <a href='https://kcpadmissions.in'>Full Details →</a>",
+    "portal":      "🌐 <a href='https://kcpadmissions.in'>kcpadmissions.in</a> — Register, Fill Form, Upload, Pay",
+    "process":     "📋 Visit kcpadmissions.in → Register → Fill Form → Upload docs → Pay fee",
+    "dates":       "📅 Dates updated on portal soon. <a href='https://kcpadmissions.in'>Check Portal →</a>",
+    "pg":          "🎓 M.Sc IT · Fashion · Science · Agriculture · M.Com · M.A · MBA · PGDCA",
+    "ug":          "🎓 BCA · BBA · B.Com · B.Sc · B.A · B.Voc · B.Sc Agriculture",
+    "diploma":     "📜 Computer Hardware · Green House Tech · French — ₹10K–₹25K",
+    "certificate": "🏆 14+ courses: Web Dev · Spoken English · Bakery · Sikh Studies · etc. ₹3K–₹10K",
+    "courses":     "📚 We offer PG, UG, Diploma & Certificate programmes!",
+    "fees":        "💰 M.Sc IT: ₹28,040/sem | BCA/BBA: ₹60K–₹70K/yr<br>📎 <a href='https://kcpadmissions.in'>Full Fee PDF →</a>",
+    "results":     "📊 <a href='https://kcpresults.in/results'>kcpresults.in/results</a><br>📞 97804-84847 (Dr. Jaspreet Kaur)",
+    "datesheet":   "📅 <a href='https://khalsacollegepatiala.org/datesheets'>View Datesheets →</a>",
+    "timetable":   "⏰ Visit college office for timetable. ☎️ 0175-2215835",
+    "faculty":     "👑 Principal: Dr. Dharminder Singh Ubha · 98557-11380<br>🎯 Controller: Dr. Jaspreet Kaur · 97804-84847",
+    "contact":     "📞 0175-2215835<br>✉️ khalsacollegepatiala@gmail.com<br>📍 Badungar Road, Patiala",
+    "location":    "📍 Badungar Road, Patiala – 147001<br>🗺️ <a href='https://maps.google.com/?q=Khalsa+College+Patiala'>Google Maps →</a>",
+    "whatsapp":    "💬 <a href='https://wa.me/911752215835'>Chat on WhatsApp →</a>",
+    "library":     "📚 Visit campus library. <a href='https://khalsacollegepatiala.org'>College Website →</a>",
+    "hostel":      "🏠 Visit office for hostel details. ☎️ 0175-2215835",
+    "hours":       "🕐 Mon–Sat · 9:00 AM – 4:00 PM<br>☎️ 0175-2215835",
+    "unknown":     "🤔 Please ask about admissions, courses, fees, results or contact!"
+}
 
-# ── Intent Finder ─────────────────────────────────────────────
 def find_intent(message):
     message = message.lower().strip()
-    priority = [
-        "eligibility","portal","process","dates",
-        "pg","ug","diploma","certificate",
-        "library","hostel","results","datesheet",
-        "timetable","faculty","contact","fees",
-        "courses","admission"
-    ]
+    priority = ["eligibility","portal","process","dates","pg","ug","diploma","certificate",
+                "library","hostel","results","datesheet","timetable","faculty","location",
+                "whatsapp","hours","contact","fees","courses","admission"]
     for intent in priority:
-        if intent in KEYWORDS:
-            if any(kw in message for kw in KEYWORDS[intent]):
-                return intent
+        if any(kw in message for kw in KEYWORDS.get(intent, [])):
+            return intent
     return "unknown"
-
-def get_rule_response(intent):
-    responses = {
-        "admission":   COLLEGE_DB["admission"]["status"],
-        "eligibility": COLLEGE_DB["admission"]["eligibility"],
-        "portal":      COLLEGE_DB["admission"]["portal"],
-        "process":     COLLEGE_DB["admission"]["process"],
-        "dates":       COLLEGE_DB["admission"]["dates"],
-        "courses":     "📚 We offer PG, UG, Diploma &amp; Certificate programmes!",
-        "pg":          COLLEGE_DB["courses"]["pg"],
-        "ug":          COLLEGE_DB["courses"]["ug"],
-        "diploma":     COLLEGE_DB["courses"]["diploma"],
-        "certificate": COLLEGE_DB["courses"]["certificate"],
-        "fees":        COLLEGE_DB["fees"],
-        "results":     COLLEGE_DB["results"],
-        "datesheet":   COLLEGE_DB["datesheet"],
-        "timetable":   COLLEGE_DB["timetable"],
-        "faculty":     COLLEGE_DB["faculty"],
-        "contact":     COLLEGE_DB["contact"],
-        "library":     COLLEGE_DB["library"],
-        "hostel":      COLLEGE_DB["hostel"],
-        "unknown":     "🤔 Please ask about admissions, courses, fees, results or faculty!"
-    }
-    return responses.get(intent, responses["unknown"])
 
 # ── Routes ────────────────────────────────────────────────────
 @app.route('/')
@@ -257,87 +144,70 @@ def css():
 def js():
     return send_from_directory('.', 'script.js')
 
-@app.route('/admin.html')
-def admin():
-    return send_from_directory('.', 'admin.html')
-
+# ── Main Chat API ─────────────────────────────────────────────
 @app.route('/api/chat', methods=['POST'])
-def chat_api():
+def chat():
     data = request.get_json()
     if not data:
-        return jsonify({"error": "No data received"}), 400
+        return jsonify({"error": "No data"}), 400
 
     user_message = data.get('message', '').strip()
-    if not user_message:
-        return jsonify({"response": "Please type your query!", "intent": "unknown"})
+    username     = data.get('username', '')
+    lang         = data.get('lang', 'en')
+    session_id   = data.get('session_id', '')
 
-    # ── 1. Groq AI try karo ──
-    ai_response = get_ai_response(user_message)
+    if not user_message:
+        return jsonify({"response": "Please type your query!", "intent": "unknown", "mode": "rule"})
+
+    intent = find_intent(user_message)
+
+    # ── Try Groq AI first ──
+    ai_response = get_ai_response(user_message, username, lang)
 
     if ai_response:
-        intent = find_intent(user_message)
         response = ai_response
-        mode = "ai"
+        mode     = "ai"
     else:
-        # ── 2. Rule-based fallback ──
-        intent = find_intent(user_message)
-        response = get_rule_response(intent)
-        mode = "rule"
+        # Rule-based fallback
+        response = RESPONSES.get(intent, RESPONSES["unknown"])
+        mode     = "rule"
 
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] [{mode.upper()}] '{user_message}' → {intent}")
+    # Log to console
+    name_str = f"[{username}]" if username else ""
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] {name_str}[{mode.upper()}][{lang}] '{user_message}' → {intent}")
 
     return jsonify({
-        "response":  response,
-        "intent":    intent,
-        "mode":      mode,
-        "timestamp": datetime.now().isoformat()
+        "response":   response,
+        "intent":     intent,
+        "mode":       mode,
+        "username":   username,
+        "timestamp":  datetime.now().isoformat()
     })
 
-# ── FAQ Routes ────────────────────────────────────────────────
-@app.route('/api/faq', methods=['GET', 'POST'])
-def faq():
-    if request.method == 'POST':
-        faq_data = request.get_json()
-        if not faq_data:
-            return jsonify({"status": "error", "message": "No data"}), 400
-        FAQ_DB.append({
-            "question": faq_data.get('question'),
-            "answer":   faq_data.get('answer'),
-            "category": faq_data.get('category', 'general'),
-            "added":    datetime.now().isoformat()
-        })
-        return jsonify({"status": "success", "total": len(FAQ_DB)})
-    return jsonify({"faqs": FAQ_DB, "total": len(FAQ_DB)})
-
-@app.route('/api/faq/<int:faq_id>', methods=['DELETE'])
-def delete_faq(faq_id):
-    if 0 <= faq_id < len(FAQ_DB):
-        removed = FAQ_DB.pop(faq_id)
-        return jsonify({"status": "success", "removed": removed})
-    return jsonify({"status": "error", "message": "FAQ not found"}), 404
-
-@app.route('/api/admin/stats')
-def stats():
-    return jsonify({
-        "active_faqs":  len(FAQ_DB),
-        "ai_mode":      groq_client is not None,
-        "last_update":  datetime.now().strftime("%Y-%m-%d"),
-        "server_time":  datetime.now().isoformat()
-    })
-
+# ── Health Check ──────────────────────────────────────────────
 @app.route('/health')
 def health():
     return jsonify({
-        "status": "healthy",
-        "ai":     groq_client is not None,
+        "status":    "healthy",
+        "ai_mode":   groq_client is not None,
         "timestamp": datetime.now().isoformat()
+    })
+
+# ── Stats ─────────────────────────────────────────────────────
+@app.route('/api/stats')
+def stats():
+    return jsonify({
+        "ai_mode":    groq_client is not None,
+        "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "status":     "running"
     })
 
 # ── Run ───────────────────────────────────────────────────────
 if __name__ == '__main__':
     print("=" * 50)
-    print("✅  Khalsa College Patiala Chatbot")
-    print(f"🤖  AI Mode: {'Groq ON' if groq_client else 'Rule-Based'}")
+    print("✅  Khalsa College Patiala Chatbot — v2.0")
+    print(f"🤖  AI Mode: {'Groq ON ✅' if groq_client else 'Rule-Based ⚠️'}")
+    print("🌐  Open: http://localhost:5000")
     print("=" * 50)
     port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=True, host='0.0.0.0', port=port)
